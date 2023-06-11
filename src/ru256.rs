@@ -79,9 +79,27 @@ impl RU256 {
         Self { v: x3 }
     }
 
+    /// Modular subtraction
+    /// A - B mod p = ((A mod p) - (B mod p)) mod p
     pub fn sub_mod(&self, b: &RU256, p: &RU256) -> Self {
-        return RU256::from_str("0").unwrap();
+        // A - B == A + (-B)
+        // since mod p, we need the additive inverse of B
+        // additive inverse is a number what when added gives the identity
+        // identity in our case if p as p mod p = 0
+        // so B inverse = p - b
+        // hence A - B mod p == ((A mod p) + ((p - B) mod p)) mod p
+        // this allows us to re-use add mod
+
+        // modularize each input first
+        let x1 = self.v.checked_rem(p.v).expect("mod");
+        let x2 = b.v.checked_rem(p.v).expect("mod");
+
+        let x2_complement = Self { v: p.v - x2 };
+        let x3 = Self { v: x1 }.add_mod(&x2_complement, p);
+
+        x3
     }
+
     pub fn mul_mod(&self, b: &RU256, p: &RU256) -> Self {
         return RU256::from_str("0").unwrap();
     }
