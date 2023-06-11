@@ -163,12 +163,8 @@ impl SECP256K1 {
     }
 
     // TODO: make more efficient
-    /// Derive the public key from a given private key
-    fn public_key(private_key: &RU256) -> Point {
-        // We generate the public key by doing a scalar
-        // multiplication of the generator point by the
-        // private key
-        // i.e public_key = nG where n = private_key
+    /// Perform scalar multiplication on a curve point
+    fn scalar_multiplication(scalar: &RU256, curve_point: &Point) -> Point {
         // this can be seen as repeated addition, so the
         // double-add algorithm will be useful here
         // see: mul_mod function in ru256.rs
@@ -176,11 +172,11 @@ impl SECP256K1 {
         // the result starts at the identity
         let mut result = Self::zero_point();
         // base point is the generator point
-        let mut adder = Self::g();
+        let mut adder = curve_point.clone();
 
-        let seq_bit_size = private_key.v.bits();
+        let seq_bit_size = scalar.v.bits();
         for i in 0..seq_bit_size {
-            if private_key.v.bit(i) {
+            if scalar.v.bit(i) {
                 // TODO: is there a proof that result is never equal to adder
                 //  with this setup?
                 result = Self::add_points(&result, &adder);
@@ -190,6 +186,15 @@ impl SECP256K1 {
         }
 
         result
+    }
+
+    /// Derive the public key from a given private key
+    fn public_key(private_key: &RU256) -> Point {
+        // We generate the public key by doing a scalar
+        // multiplication of the generator point by the
+        // private key
+        // i.e public_key = nG where n = private_key
+        Self::scalar_multiplication(&private_key, &Self::g())
     }
 }
 

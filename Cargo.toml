@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 hex = "0.4.3"
 primitive-types = "0.12.1"
+sha256 = "1.1.4"
