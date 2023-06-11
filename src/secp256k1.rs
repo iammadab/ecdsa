@@ -2,6 +2,7 @@ use crate::ru256::RU256;
 use std::str::FromStr;
 
 /// Represents a point on an elliptic curve
+#[derive(PartialEq, Clone)]
 pub(crate) struct Point {
     x: RU256,
     y: RU256,
@@ -22,7 +23,7 @@ impl Point {
     }
 
     /// Determines if a point is the identity element
-    fn is_zero(&self) -> bool {
+    fn is_zero_point(&self) -> bool {
         self.x.is_zero() && self.y.is_zero()
     }
 }
@@ -62,14 +63,103 @@ impl SECP256K1 {
         }
     }
 
-    /// Add two curve points
+    /// Add two different curve points
     fn add_points(p1: &Point, p2: &Point) -> Point {
-        todo!()
+        // two points P = (xp, yp) and Q = (xq, yq)
+        // lambda = (yq - yp) / (xq - xp)
+        // x3 = lambda^2 - xp - xq
+        // y3 = lambda(xp - x3) - yp
+
+        // we need to make sure the points are not the same,
+        // if the same when calculating lambda, we will have
+        // a division by zero error
+        assert!(p1 != p2);
+
+        // if any of the point is the identity, we return the
+        // other point
+        // as P + O = P
+        if p1.is_zero_point() {
+            return p2.clone();
+        }
+        if p2.is_zero_point() {
+            return p1.clone();
+        }
+
+        // get the field prime
+        let p = Self::p();
+
+        // calculate slope
+        let y_diff = p1.y.sub_mod(&p2.y, &p);
+        let x_diff = p1.x.sub_mod(&p2.x, &p);
+        let lambda = y_diff.div_mod(&x_diff, &p);
+
+        // calculate point values
+        let x3 = &lambda
+            .mul_mod(&lambda, &p)
+            .sub_mod(&p1.x, &p)
+            .sub_mod(&p2.x, &p);
+        let y3 = &p1
+            .x
+            .sub_mod(&x3, &p)
+            .mul_mod(&lambda, &p)
+            .sub_mod(&p1.y, &p);
+
+        Point {
+            x: x3.clone(),
+            y: y3.clone(),
+        }
     }
 
     /// Double a curve point
-    fn double_point(p: &Point) -> Point {
-        todo!()
+    fn double_point(p1: &Point) -> Point {
+        // only one point (x, y)
+        // lambda = (3x^2 + a) / 2y
+        // x3 = lambda^2 - x - x
+        // y3 = lambda(xp - x) - y
+
+        // doubling the identity point, returns the identity point
+        // O + O = O
+        if p1.is_zero_point() {
+            return Self::zero_point();
+        };
+
+        // if only y is zero, we are at the non-symmetrical point
+        // on the curve, drawing a tangent line from this point will
+        // lead to infinity (hence we return the identity point)
+        if p1.y.is_zero() {
+            return Self::zero_point();
+        };
+
+        // get the field prime
+        let p = Self::p();
+
+        // formula includes constant 2 and 3
+        // to simply formula description, we define
+        // them as here first
+        let const_2 = RU256::from_str("0x2").unwrap();
+        let const_3 = RU256::from_str("0x3").unwrap();
+
+        // calculate the slope
+        // for the secp256k1 curve a = 0 so no need to include that in the formula description
+        let three_x_square = &p1.x.mul_mod(&p1.x, &p).mul_mod(&const_3, &p);
+        let two_y = &p1.y.mul_mod(&const_2, &p);
+        let lambda = three_x_square.div_mod(two_y, &p);
+
+        // calculate point values
+        let x3 = &lambda
+            .mul_mod(&lambda, &p)
+            .sub_mod(&p1.x, &p)
+            .sub_mod(&p1.x, &p);
+        let y3 = &p1
+            .x
+            .sub_mod(&x3, &p)
+            .mul_mod(&lambda, &p)
+            .sub_mod(&p1.y, &p);
+
+        Point {
+            x: x3.clone(),
+            y: y3.clone(),
+        }
     }
 }
 
