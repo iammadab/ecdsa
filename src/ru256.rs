@@ -30,6 +30,30 @@ impl ToString for RU256 {
 }
 
 impl RU256 {
+    /// RU256 from byte slice
+    pub fn from_bytes(byte_slice: &[u8]) -> Self {
+        // can't be more than 32 bytes
+        assert!(byte_slice.len() <= 32);
+        Self {
+            v: U256::from_big_endian(byte_slice),
+        }
+    }
+
+    /// RU255 to bytes
+    pub fn to_bytes(&self, bytes: &mut [u8]) {
+        self.v.to_big_endian(bytes)
+    }
+
+    /// Additive Identity
+    pub fn zero() -> Self {
+        Self { v: U256::zero() }
+    }
+
+    /// Multiplicative Identity
+    pub fn one() -> Self {
+        Self { v: U256::one() }
+    }
+
     /// Modular addition
     /// A + B mod p == ((A mod p) + (B mod p)) mod p
     /// also handle overflow results
@@ -100,9 +124,48 @@ impl RU256 {
         x3
     }
 
+    /// Modular multiplication
     pub fn mul_mod(&self, b: &RU256, p: &RU256) -> Self {
-        return RU256::from_str("0").unwrap();
+        // multiplication can be thought of a repeated addition
+        // were a * n = a + a + a .. + a n times
+        // the above above algorithm is linear in n
+        // we can do this in log(n) time using the
+        // double-add algorithm: see: https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication#Double-and-add
+
+        // modularize each input first
+        let x1 = self.v.checked_rem(p.v).expect("mod");
+        let x2 = b.v.checked_rem(p.v).expect("mod");
+
+        // n * b = b * n
+        // we can either repeat b n times or n b times
+        // to reduce the number of operations we should repeat the smaller of the 2
+        let (seq, adder) = match x1 < x2 {
+            true => (x1, x2),
+            _ => (x2, x1),
+        };
+
+        // Double-Add algorithm
+        // if we represent the sequence as a binary digit
+        // starting from the LSB up to the MSB
+        // if the current bit is set to one, we add the
+        // content of the adder to the result
+        // before moving on the the next step we, double the adder
+        let mut result = Self::zero();
+        let mut adder = Self { v: adder };
+
+        let seq_bit_size = seq.bits();
+        for i in 0..seq_bit_size {
+            if seq.bit(i) {
+                // current bit is set, add to result
+                result = result.add_mod(&adder, &p);
+            }
+            // double the adder
+            adder = adder.add_mod(&adder, &p);
+        }
+
+        result
     }
+
     pub fn exp_mod(&self, b: &RU256, p: &RU256) -> Self {
         return RU256::from_str("0").unwrap();
     }
