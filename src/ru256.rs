@@ -29,6 +29,12 @@ impl ToString for RU256 {
     }
 }
 
+impl PartialEq for RU256 {
+    fn eq(&self, other: &Self) -> bool {
+        return self.v == other.v
+    }
+}
+
 impl RU256 {
     /// RU256 from byte slice
     pub fn from_bytes(byte_slice: &[u8]) -> Self {
