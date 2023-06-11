@@ -4,7 +4,7 @@ use std::str::FromStr;
 
 #[derive(Clone)]
 pub(crate) struct RU256 {
-    v: U256,
+    pub(crate) v: U256,
 }
 
 #[derive(Debug, PartialEq, Eq)]
