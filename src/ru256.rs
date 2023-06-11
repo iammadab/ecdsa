@@ -144,12 +144,15 @@ impl RU256 {
             _ => (x2, x1),
         };
 
+        // TODO: make this comment better
         // Double-Add algorithm
         // if we represent the sequence as a binary digit
         // starting from the LSB up to the MSB
         // if the current bit is set to one, we add the
         // content of the adder to the result
         // before moving on the the next step we, double the adder
+
+        // set the result to the additive identity element
         let mut result = Self::zero();
         let mut adder = Self { v: adder };
 
@@ -166,11 +169,34 @@ impl RU256 {
         result
     }
 
-    pub fn exp_mod(&self, b: &RU256, p: &RU256) -> Self {
-        return RU256::from_str("0").unwrap();
+    /// Modular exponentiation
+    pub fn exp_mod(&self, e: &RU256, p: &RU256) -> Self {
+        // exponentiation can be thought of as repeated multiplication
+        // a^e = a * a * a * ... * a  e times (linear)
+        // we can make it log(n) by using a variation of the double-add algorithm
+        // called the square-multiply algorithm
+
+        // set the result to the multiplicative identity element
+        let mut result = Self::one();
+        let mut multiplier = Self {
+            v: self.v.checked_rem(p.v).expect("mod"),
+        };
+
+        // TODO: add comments
+        let seq_bit_size = e.v.bits();
+        for i in 0..seq_bit_size {
+            if e.v.bit(i) {
+                result = result.mul_mod(&multiplier, &p);
+            }
+            multiplier = multiplier.mul_mod(&multiplier, &p);
+        }
+
+        result
     }
+
     pub fn div_mod(&self, b: &RU256, p: &RU256) -> Self {
-        return RU256::from_str("0").unwrap();
+        assert!(p.v - 2 > U256::from_big_endian(&[0]));
+        return self.mul_mod(&b.exp_mod(&RU256 { v: p.v - 2 }, &p), &p);
     }
 }
 
