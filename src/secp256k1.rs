@@ -185,7 +185,7 @@ impl SECP256K1 {
                 //  with this setup?
                 result = Self::add_points(&result, &adder);
             }
-            // here we always double
+            // we double adder after every step
             adder = Self::double_point(&adder);
         }
 
@@ -223,5 +223,103 @@ mod tests {
         let pt3 = SECP256K1::double_point(&pt2);
 
         assert_eq!(pt3.to_hex_string(), "04e493dbf1c10d80f3581e4904930b1404cc6c13900ee0758474fa94abe8c4cd1351ed993ea0d455b75642e2098ea51448d967ae33bfbdfe40cfe97bdc47739922");
+    }
+
+    #[test]
+    fn public_key_generatiion_test_vectors() {
+        // see: https://chuckbatson.wordpress.com/2014/11/26/secp256k1-test-vectors/
+        // k = 1
+        let pub_key = SECP256K1::public_key(&RU256::from_str("1").unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "483ADA7726A3C4655DA4FBFC0E1108A8FD17B448A68554199C47D08FFB10D4B8"
+        );
+
+        // k = 2
+        let pub_key = SECP256K1::public_key(&RU256::from_str("2").unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "C6047F9441ED7D6D3045406E95C07CD85C778E4B8CEF3CA7ABAC09B95C709EE5"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "1AE168FEA63DC339A3C58419466CEAEEF7F632653266D0E1236431A950CFE52A"
+        );
+
+        // k = 5
+        let pub_key = SECP256K1::public_key(&RU256::from_str("5").unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "2F8BDE4D1A07209355B4A7250A5C5128E88B84BDDC619AB7CBA8D569B240EFE4"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "D8AC222636E5E3D6D4DBA9DDA6C9C426F788271BAB0D6840DCA87D3AA6AC62D6"
+        );
+
+        // k = 6
+        let pub_key = SECP256K1::public_key(&RU256::from_str("6").unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "FFF97BD5755EEEA420453A14355235D382F6472F8568A18B2F057A1460297556"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "AE12777AACFBB620F3BE96017F45C560DE80F0F6518FE4A03C870C36B075F297"
+        );
+
+        // k = 9
+        let pub_key = SECP256K1::public_key(&RU256::from_str("9").unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "ACD484E2F0C7F65309AD178A9F559ABDE09796974C57E714C35F110DFC27CCBE"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "CC338921B0A7D9FD64380971763B61E9ADD888A4375F8E0F05CC262AC64F9C37"
+        );
+
+        // k = 10
+        let pub_key = SECP256K1::public_key(&RU256::from_str_radix("10", 10).unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "A0434D9E47F3C86235477C7B1AE6AE5D3442D49B1943C2B752A68E2A47E247C7"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "893ABA425419BC27A3B6C7E693A24C696F794C2ED877A1593CBEE53B037368D7"
+        );
+
+        // k = 20
+        let pub_key = SECP256K1::public_key(&RU256::from_str_radix("20", 10).unwrap());
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "4CE119C96E2FA357200B559B2F7DD5A5F02D5290AFF74B03F3E471B273211C97"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "12BA26DCB10EC1625DA61FA10A844C676162948271D96967450288EE9233DC3A"
+        );
+
+        // k = 115792089237316195423570985008687907852837564279074904382605163141518161494336
+        let pub_key = SECP256K1::public_key(
+            &RU256::from_str_radix(
+                "115792089237316195423570985008687907852837564279074904382605163141518161494336",
+                10,
+            )
+            .unwrap(),
+        );
+        assert_eq!(
+            pub_key.x.to_string().to_uppercase(),
+            "79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798"
+        );
+        assert_eq!(
+            pub_key.y.to_string().to_uppercase(),
+            "B7C52588D95C3B9AA25B0403F1EEF75702E84BB7597AABE663B82F6F04EF2777"
+        );
     }
 }

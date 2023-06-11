@@ -15,10 +15,7 @@ impl FromStr for RU256 {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         // conversion from a hex string
-        match U256::from_str_radix(s, 16) {
-            Ok(n) => Ok(Self { v: n }),
-            Err(_) => Err(RU256ParseError),
-        }
+        RU256::from_str_radix(s, 16)
     }
 }
 
@@ -43,6 +40,14 @@ impl RU256 {
         assert!(byte_slice.len() <= 32);
         Self {
             v: U256::from_big_endian(byte_slice),
+        }
+    }
+
+    /// RU256 from number string
+    pub fn from_str_radix(s: &str, radix: u32) -> Result<Self, RU256ParseError> {
+        match U256::from_str_radix(s, radix) {
+            Ok(n) => Ok(Self { v: n }),
+            Err(_) => Err(RU256ParseError),
         }
     }
 
