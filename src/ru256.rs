@@ -57,6 +57,11 @@ impl RU256 {
         let (mut x3, has_overflow) = x1.overflowing_add(x2);
 
         if has_overflow {
+            // we can performed checked operations because we can't get an overflow from
+            // adding u to the result
+            // worst case result is if the 2 values are (p-1 and p-1)
+            // worst case sum is 2p - 2
+            // which is less than double max, assuming p < max (which is the case)
             x3 = x3
                 .checked_add(
                     // parity's U256 is one less than actual, so we need to add 1 to get the accurate result
