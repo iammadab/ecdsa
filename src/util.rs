@@ -23,12 +23,11 @@ pub(crate) fn modular_multiplicative_inverse(n: BigInt, order: BigInt) -> BigInt
 }
 
 pub(crate) fn modulo(n: &BigInt, order: &BigInt) -> BigInt {
-    let rem = n % order;
-    return if rem < BigInt::zero() {
-        rem + order
-    } else {
-        rem
-    };
+    let mut rem = n % order;
+    while rem < BigInt::zero() {
+        rem = rem + order
+    }
+    rem
 }
 
 #[cfg(test)]
