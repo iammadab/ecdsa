@@ -31,7 +31,7 @@ impl ToString for RU256 {
 
 impl PartialEq for RU256 {
     fn eq(&self, other: &Self) -> bool {
-        return self.v == other.v
+        return self.v == other.v;
     }
 }
 
@@ -150,18 +150,11 @@ impl RU256 {
             _ => (x2, x1),
         };
 
-        // TODO: make this comment better
-        // Double-Add algorithm
-        // if we represent the sequence as a binary digit
-        // starting from the LSB up to the MSB
-        // if the current bit is set to one, we add the
-        // content of the adder to the result
-        // before moving on the the next step we, double the adder
-
         // set the result to the additive identity element
         let mut result = Self::zero();
         let mut adder = Self { v: adder };
 
+        // Double-Add algorithm
         let seq_bit_size = seq.bits();
         for i in 0..seq_bit_size {
             if seq.bit(i) {
@@ -188,7 +181,7 @@ impl RU256 {
             v: self.v.checked_rem(p.v).expect("mod"),
         };
 
-        // TODO: add comments
+        // Square multiply algorithm
         let seq_bit_size = e.v.bits();
         for i in 0..seq_bit_size {
             if e.v.bit(i) {
@@ -200,8 +193,20 @@ impl RU256 {
         result
     }
 
+    /// Modular division
     pub fn div_mod(&self, b: &RU256, p: &RU256) -> Self {
+        // we can express the division problem as a multiplication problem
+        // a / b mod p == a * b^-1 mod p
+        // we can also express the multiplicative inverse as a posistive exponent
+        // from Fermat's little theorem: https://en.wikipedia.org/wiki/Fermat%27s_little_theorem
+        // a^(p-1) == 1 mod p
+        // hence b^-1 mod p is congruent with b^-1 * b^p-1 mod p
+        // if we simplify we have b^p-2 mod p
+        // hence a / b mod p = a * b^(p-2) mod p
+
+        // p must be greater than 2
         assert!(p.v - 2 > U256::from_big_endian(&[0]));
+
         return self.mul_mod(&b.exp_mod(&RU256 { v: p.v - 2 }, &p), &p);
     }
 }
