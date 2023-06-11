@@ -7,5 +7,4 @@ edition = "2021"
 
 [dependencies]
 hex = "0.4.3"
-num-bigint = "0.4.3"
-num-traits = "0.2.15"
+primitive-types = "0.12.1"
