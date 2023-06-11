@@ -2,7 +2,7 @@ use hex;
 use primitive_types::U256;
 use std::str::FromStr;
 
-struct RU256 {
+pub(crate) struct RU256 {
     v: U256,
 }
 
@@ -53,6 +53,11 @@ impl RU256 {
     /// Additive Identity
     pub fn zero() -> Self {
         Self { v: U256::zero() }
+    }
+
+    /// Check if additive identity
+    pub fn is_zero(&self) -> bool {
+        self.v == U256::zero()
     }
 
     /// Multiplicative Identity
