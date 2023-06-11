@@ -2,10 +2,10 @@ use crate::ru256::RU256;
 use std::str::FromStr;
 
 /// Represents a point on an elliptic curve
-#[derive(PartialEq, Clone)]
+#[derive(PartialEq, Clone, Debug)]
 pub(crate) struct Point {
-    x: RU256,
-    y: RU256,
+    pub(crate) x: RU256,
+    pub(crate) y: RU256,
 }
 
 impl Point {
@@ -36,12 +36,12 @@ impl SECP256K1 {
 
     /// Prime value
     /// 2^256 - 2^23 - 2^9 - 2^8 - 2^7 - 2^6 - 2^4 - 1
-    fn p() -> RU256 {
+    pub(crate) fn p() -> RU256 {
         RU256::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFC2F").unwrap()
     }
 
     /// Generator point
-    fn g() -> Point {
+    pub(crate) fn g() -> Point {
         Point {
             x: RU256::from_str("79BE667EF9DCBBAC55A06295CE870B07029BFCDB2DCE28D959F2815B16F81798")
                 .unwrap(),
@@ -51,7 +51,7 @@ impl SECP256K1 {
     }
 
     /// Group order
-    fn n() -> RU256 {
+    pub(crate) fn n() -> RU256 {
         RU256::from_str("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEBAAEDCE6AF48A03BBFD25E8CD0364141").unwrap()
     }
 
@@ -64,7 +64,7 @@ impl SECP256K1 {
     }
 
     /// Add two different curve points
-    fn add_points(p1: &Point, p2: &Point) -> Point {
+    pub(crate) fn add_points(p1: &Point, p2: &Point) -> Point {
         // two points P = (xp, yp) and Q = (xq, yq)
         // lambda = (yq - yp) / (xq - xp)
         // x3 = lambda^2 - xp - xq
@@ -164,7 +164,7 @@ impl SECP256K1 {
 
     // TODO: make more efficient
     /// Perform scalar multiplication on a curve point
-    fn scalar_multiplication(scalar: &RU256, curve_point: &Point) -> Point {
+    pub(crate) fn scalar_multiplication(scalar: &RU256, curve_point: &Point) -> Point {
         // this can be seen as repeated addition, so the
         // double-add algorithm will be useful here
         // see: mul_mod function in ru256.rs
@@ -189,7 +189,7 @@ impl SECP256K1 {
     }
 
     /// Derive the public key from a given private key
-    fn public_key(private_key: &RU256) -> Point {
+    pub(crate) fn public_key(private_key: &RU256) -> Point {
         // We generate the public key by doing a scalar
         // multiplication of the generator point by the
         // private key

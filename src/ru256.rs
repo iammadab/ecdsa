@@ -2,7 +2,7 @@ use hex;
 use primitive_types::U256;
 use std::str::FromStr;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub(crate) struct RU256 {
     pub(crate) v: U256,
 }
