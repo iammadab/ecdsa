@@ -41,7 +41,10 @@ fn sign_message(message: &str, private_key: &RU256) -> Signature {
         .add_mod(&hash, &n)
         .div_mod(&nonce_num, &n);
 
-    Signature { r: r.clone(), s: s.clone() }
+    Signature {
+        r: r.clone(),
+        s: s.clone(),
+    }
 }
 
 /// ECDSA algorithm for verification of a signed message
