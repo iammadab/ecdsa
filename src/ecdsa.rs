@@ -6,8 +6,8 @@ use std::str::FromStr;
 
 /// Represents an ECDSA signature
 pub struct Signature {
-    r: RU256,
     s: RU256,
+    r: RU256,
 }
 
 /// Generate the sha256 hash of a string
